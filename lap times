@@ -1,0 +1,34 @@
+function [lap_times] = F1_Strategy_With_DRS()
+% --- Core Constants ---
+total_laps = 50;
+drs_zones = 3;           % Number of DRS zones on the track
+drs_gain_per_zone = 0.4; % Seconds gained per zone (Drag reduction)
+
+% --- Strategy Logic ---
+lap_indices = 1:total_laps;
+
+% 1. Baseline Performance (Wear + Fuel)
+base_times = 90.0 + (lap_indices.^1.2 * 0.02) - ((total_laps - lap_indices) * 0.07);
+
+% 2. DRS Logic: Probabilistic Deployment
+% 0.7 = 70% probability of being in DRS range (e.g., chasing a rival)
+% 0.0 = 0% probability (e.g., leading the race)
+drs_probability = 0.7; 
+
+% Calculate DRS impact
+drs_total_benefit = drs_zones * drs_gain_per_zone;
+drs_vector = (rand(1, total_laps) < drs_probability) * drs_total_benefit;
+
+% Final Time with DRS
+lap_times = base_times - drs_vector;
+
+% --- Visualization ---
+figure;
+plot(lap_indices, base_times, '--r', 'DisplayName', 'Clean Air (No DRS)');
+hold on;
+plot(lap_indices, lap_times, 'b', 'LineWidth', 1.5, 'DisplayName', 'With DRS Opportunity');
+grid on;
+xlabel('Lap Number'); ylabel('Lap Time (s)');
+legend;
+title('Impact of DRS on Stint Performance');
+end
