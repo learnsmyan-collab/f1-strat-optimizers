@@ -1,0 +1,32 @@
+function F1_Strategy_Optimizer()
+% Parameters
+laps = 50;
+pit_time_loss = 22.5; % Seconds lost in pit lane
+fuel_effect = 0.08;   % Secs gained per lap due to fuel burn
+
+% Degradation Model: Non-linear wear
+% lap_deg = base + (lap_index^exponent * scaling_factor)
+base_deg = 0.02;
+deg_exponent = 1.2; 
+
+% Initialize Matrices
+lap_times = zeros(laps, 1);
+
+% Calculate Lap Times for a single stint
+for i = 1:laps
+    fuel_gain = (laps - i) * fuel_effect;
+    wear_loss = (i^deg_exponent) * base_deg;
+    lap_times(i) = 90 + wear_loss - fuel_gain;
+end
+
+% Visualize the "Tyre Cliff"
+figure;
+plot(1:laps, lap_times, 'LineWidth', 2);
+grid on;
+xlabel('Lap Number'); ylabel('Lap Time (s)');
+title('Lap Time vs. Stint Progress (Fuel Correction + Non-linear Wear)');
+
+% Strategy Comparison: 1-Stop vs 2-Stop
+% Add pit loss logic to compare cumulative times
+fprintf('Analysis Complete: Strategy optimization requires evaluating the intersection of tyre curves.\n');
+end
