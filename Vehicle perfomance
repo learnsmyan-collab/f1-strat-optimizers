@@ -1,0 +1,80 @@
+%==========================================================================
+% Project: Longitudinal Vehicle Performance Optimizer
+% Description: Simulates vehicle acceleration constrained by tire traction
+%              and aerodynamic drag. Includes sensitivity analysis for 
+%              aerodynamic performance.
+% Author: [Smyan Aggarwal]
+% Date: 2026-07-05
+%==========================================================================
+
+clear; clc; close all;
+
+% 1. Constants & Parameters
+m = 800;           % Vehicle mass (kg)
+g = 9.81;          % Gravity (m/s^2)
+mu = 1.6;          % Tire friction coefficient (higher = more grip)
+rho = 1.225;       % Air density (kg/m^3)
+A = 1.5;           % Frontal area (m^2)
+P_max = 800000;    % Max engine power (W)
+
+% 2. Sensitivity Analysis Setup
+% We sweep across a range of drag coefficients (Cd) to quantify
+% how aerodynamic efficiency impacts terminal speed.
+drag_sweep = 0.6:0.1:1.2; 
+final_velocities = zeros(size(drag_sweep));
+
+% 3. Main Simulation Loop
+figure('Name', 'Performance Sensitivity Analysis', 'NumberTitle', 'off');
+hold on;
+
+for j = 1:length(drag_sweep)
+    Cd = drag_sweep(j);
+    dt = 0.05;      % Time step for numerical integration (s)
+    t = 0:dt:10;    % 10-second simulation window
+    v = zeros(size(t));
+
+    for i = 1:length(t)-1
+        % Calculate Aerodynamic Drag (Force = 0.5 * density * velocity^2 * Cd * Area)
+        % Drag increases quadratically, eventually plateauing top speed.
+        Fd = 0.5 * rho * v(i)^2 * Cd * A;
+
+        % Calculate Engine Thrust
+        % At low speeds, we assume a traction-limited launch.
+        % At high speeds, thrust is power-limited (F = P / v).
+        if v(i) < 2
+            F_engine = 20000; 
+        else
+            F_engine = P_max / v(i);
+        end
+
+        % Traction Limit Implementation
+        % Limits engine force by available friction (mu * Normal Force).
+        % This prevents physically impossible acceleration at low speeds.
+        F_traction_max = mu * m * g;
+        F_engine = min(F_engine, F_traction_max);
+
+        % Calculate Net Force & Acceleration (F = ma -> a = F/m)
+        F_net = F_engine - Fd;
+        a = F_net / m;
+
+        % Euler Integration to update velocity
+        v(i+1) = v(i) + a * dt;
+    end
+
+    % Store the final velocity reached for this specific aero configuration
+    final_velocities(j) = v(end);
+    plot(t, v, 'LineWidth', 1.5, 'DisplayName', ['Cd = ' num2str(Cd)]);
+end
+
+% 4. Visualization
+xlabel('Time (s)');
+ylabel('Velocity (m/s)');
+title('Vehicle Acceleration Profile across Aero configurations');
+legend show; grid on;
+
+% 5. Sensitivity Analysis Plot
+figure('Name', 'Drag Sensitivity Result', 'NumberTitle', 'off');
+plot(drag_sweep, final_velocities, '-o', 'LineWidth', 2, 'MarkerFaceColor', 'b');
+xlabel('Drag Coefficient (Cd)');
+ylabel('Final Velocity at 10s (m/s)');
+title('Aerodynamic Efficiency Sensitivity Analysis');
