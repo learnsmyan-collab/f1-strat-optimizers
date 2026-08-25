@@ -1,7 +1,7 @@
 %==========================================================================
 % Project: F1 Race Strategy & Tyre Cliff Optimizer
 % Description: Models non-linear tyre wear against fuel burn reduction 
-%              across a full race stint to evaluate pit strategy windows.
+%              and factors in pit lane time loss to compare 1 vs 2 stops.
 % Author: Smyan Aggarwal
 % Date: 2026-07-05
 %==========================================================================
@@ -9,45 +9,74 @@
 function F1_Strategy_Optimizer()
     clear; clc; close all;
 
-    % 1. Strategy Parameters & Stint Constants
-    laps = 50;
-    pit_time_loss = 22.5; % Time penalty lost in the pit lane (seconds)
-    fuel_effect = 0.08;   % Lap time improvement per kg of fuel burned
+    % 1. Core race settings
+    race_laps = 50;
+    pit_loss = 22.5;      % time lost cruising down the pit lane (seconds)
+    fuel_bonus = 0.08;    % getting lighter each lap makes us slightly faster
 
-    % Tyre Degradation Model: Non-linear wear scaling
-    % As the stint progresses, thermal wear compounds exponentially.
-    base_deg = 0.02;
-    deg_exponent = 1.2; 
+    % Tyre degradation setup (wear compounds non-linearly over time)
+    base_wear = 0.02;
+    wear_exp = 1.2; 
 
-    % 2. Simulation Loop (Stint Lap Time Evolution)
-    lap_times = zeros(laps, 1);
+    % 2. Build the base stint curve (lap time evolution)
+    base_lap_times = zeros(race_laps, 1);
 
-    for i = 1:laps
-        % lighter car over time speeds us up, rubber degradation slows us down
-        fuel_gain = (laps - i) * fuel_effect;
-        wear_loss = (i^deg_exponent) * base_deg;
+    for i = 1:race_laps
+        fuel_gain = (race_laps - i) * fuel_bonus;
+        wear_drop = (i^wear_exp) * base_wear;
         
-        % baseline lap time (~90s) adjusted for fuel load and tyre state
-        lap_times(i) = 90.0 + wear_loss - fuel_gain;
+        % starting around a 90s baseline, adjusted for fuel load and rubber state
+        base_lap_times(i) = 90.0 + wear_drop - fuel_gain;
     end
 
-    % 3. Visualization & Automated Asset Export
-    fig = figure('Name', 'Tyre Cliff & Stint Analysis', 'Position', [100, 100, 700, 400]);
-    plot(1:laps, lap_times, 'LineWidth', 2.0, 'Color', '#D9534F');
+    % 3. Crunch the strategy math (1-stop vs 2-stop total race time)
     
+    % Option A: Classic 1-stop (pit right at the halfway mark)
+    pit_lap_single = 25;
+    total_time_1stop = sum(base_lap_times) + pit_loss;
+
+    % Option B: Aggressive 2-stop (pit twice to stay on fresher, faster rubber)
+    pit_laps_double = [17, 34];
+    
+    % resetting wear curves for each fresh set of tyres
+    stint_one = base_lap_times(1:pit_laps_double(1));
+    stint_two = base_lap_times(1:(pit_laps_double(2) - pit_laps_double(1)));
+    stint_three = base_lap_times(1:(race_laps - pit_laps_double(2)));
+    
+    total_time_2stop = sum(stint_one) + sum(stint_two) + sum(stint_three) + (2 * pit_loss);
+
+    % 4. Plot the results and save a clean asset for the PDF report
+    fig = figure('Name', 'Race Strategy Comparison', 'Position', [100, 100, 700, 400]);
+    plot(1:race_laps, base_lap_times, 'LineWidth', 2.0, 'Color', '#D9534F');
+    
+    % drop vertical lines to show where the pit stops happen
+    xline(pit_lap_single, '--b', 'LineWidth', 1.5, 'DisplayName', '1-Stop Window');
+    xline(pit_laps_double(1), ':k', 'LineWidth', 1.2, 'DisplayName', '2-Stop Windows');
+    xline(pit_laps_double(2), ':k', 'HandleVisibility', 'off');
+
     grid on;
     box on;
     xlabel('Lap Number', 'FontSize', 10);
-    ylabel('Effective Lap Time (s)', 'FontSize', 10);
-    title('Stint Lap Time Evolution (Tyre Degradation vs. Fuel Burn)', 'FontSize', 11, 'FontWeight', 'bold');
+    ylabel('Estimated Lap Time (s)', 'FontSize', 10);
+    title('Stint Lap Times & Pit Stop Strategy Breakdown', 'FontSize', 11, 'FontWeight', 'bold');
+    legend('Location', 'southeast', 'FontSize', 8);
     
-    % Save high-res asset for PDF portfolio integration
+    % export high-res graphic straight to folder for portfolio layout
     exportgraphics(fig, 'f1_stint_strategy.png', 'Resolution', 300);
     close(fig);
 
-    % 4. Terminal Output Summary
-    fprintf('\n--- Race Strategy Analysis ---\n');
-    fprintf('Stint Length Evaluated: %d laps\n', laps);
-    fprintf('Estimated Tyre Cliff Threshold: ~Lap %d (where degradation outpaces fuel burn)\n', round(laps * 0.7));
-    fprintf('Exported asset: "f1_stint_strategy.png" successfully.\n');
+    % 5. Print a quick summary to the command window
+    fprintf('\n--- Strategy Comparison Results ---\n');
+    fprintf('Total Race Distance: %d laps\n', race_laps);
+    fprintf('Pit Stop Time Penalty: %.1f seconds\n', pit_loss);
+    fprintf('Estimated 1-Stop Total Time: %.2f sec\n', total_time_1stop);
+    fprintf('Estimated 2-Stop Total Time: %.2f sec\n', total_time_2stop);
+    
+    if total_time_1stop < total_time_2stop
+        fprintf('Verdict: 1-stop strategy wins out by %.2f seconds.\n', total_time_2stop - total_time_1stop);
+    else
+        fprintf('Verdict: 2-stop strategy overcomes the pit loss through superior tyre pace.\n');
+    end
+    
+    fprintf('Saved asset: "f1_stint_strategy.png" successfully.\n');
 end
