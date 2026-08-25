@@ -1,34 +1,59 @@
+%==========================================================================
+% Project: F1 Race Strategy with DRS Performance Engine
+% Description: Models lap time evolution factoring in non-linear tyre wear,
+%              fuel burn reduction, and probabilistic DRS activation benefits.
+% Author: Smyan Aggarwal
+% Date: 2026-07-05
+%==========================================================================
+
 function [lap_times] = F1_Strategy_With_DRS()
-% --- Core Constants ---
-total_laps = 50;
-drs_zones = 3;           % Number of DRS zones on the track
-drs_gain_per_zone = 0.4; % Seconds gained per zone (Drag reduction)
+    clc; close all;
 
-% --- Strategy Logic ---
-lap_indices = 1:total_laps;
+    % quick settings for the track and DRS setup
+    total_laps = 50;
+    drs_zones = 3;           % number of detection zones on the circuit
+    drs_gain_per_zone = 0.4; % time saved per zone from lowered aero drag (seconds)
 
-% 1. Baseline Performance (Wear + Fuel)
-base_times = 90.0 + (lap_indices.^1.2 * 0.02) - ((total_laps - lap_indices) * 0.07);
+    % build the base pace curve (tyre wear getting worse vs fuel burn making us lighter)
+    lap_indices = 1:total_laps;
+    base_times = 90.0 + (lap_indices.^1.2 * 0.02) - ((total_laps - lap_indices) * 0.07);
 
-% 2. DRS Logic: Probabilistic Deployment
-% 0.7 = 70% probability of being in DRS range (e.g., chasing a rival)
-% 0.0 = 0% probability (e.g., leading the race)
-drs_probability = 0.7; 
+    % probabilistic DRS usage check
+    % 0.7 means a 70% chance we're sitting within 1 second of a rival to get DRS
+    % (clean air or leading means 0% chance)
+    drs_probability = 0.7; 
 
-% Calculate DRS impact
-drs_total_benefit = drs_zones * drs_gain_per_zone;
-drs_vector = (rand(1, total_laps) < drs_probability) * drs_total_benefit;
+    % maximum potential boost if we hit every DRS zone on a given lap
+    drs_total_benefit = drs_zones * drs_gain_per_zone;
+    
+    % randomized check per lap to see if we actually get the DRS delta
+    drs_vector = (rand(1, total_laps) < drs_probability) * drs_total_benefit;
 
-% Final Time with DRS
-lap_times = base_times - drs_vector;
+    % subtract the DRS benefit from our baseline pace
+    lap_times = base_times - drs_vector;
 
-% --- Visualization ---
-figure;
-plot(lap_indices, base_times, '--r', 'DisplayName', 'Clean Air (No DRS)');
-hold on;
-plot(lap_indices, lap_times, 'b', 'LineWidth', 1.5, 'DisplayName', 'With DRS Opportunity');
-grid on;
-xlabel('Lap Number'); ylabel('Lap Time (s)');
-legend;
-title('Impact of DRS on Stint Performance');
+    % plot the clean air vs drs pace and save it out for the report
+    fig = figure('Name', 'DRS Stint Impact Analysis', 'Position', [100, 100, 700, 400]);
+    plot(lap_indices, base_times, '--r', 'LineWidth', 1.5, 'DisplayName', 'Clean Air (No DRS)');
+    hold on;
+    plot(lap_indices, lap_times, 'b', 'LineWidth', 1.8, 'DisplayName', 'With DRS Opportunity');
+    
+    grid on;
+    box on;
+    xlabel('Lap Number', 'FontSize', 10);
+    ylabel('Lap Time (s)', 'FontSize', 10);
+    title('Impact of DRS on Stint Performance & Pace Variability', 'FontSize', 11, 'FontWeight', 'bold');
+    legend('Location', 'southeast', 'FontSize', 8);
+    
+    % drop a clean high-res image straight into the folder for the PDF build
+    exportgraphics(fig, 'drs_stint_analysis.png', 'Resolution', 300);
+    close(fig);
+
+    % print out a fast text summary in the console
+    fprintf('\n--- DRS Stint Simulation Complete ---\n');
+    fprintf('Total Laps: %d\n', total_laps);
+    fprintf('Active Zones: %d (%.2f sec max gain per lap)\n', drs_zones, drs_total_benefit);
+    fprintf('Average Lap Time (Clean Air): %.2f sec\n', mean(base_times));
+    fprintf('Average Lap Time (With DRS):  %.2f sec\n', mean(lap_times));
+    fprintf('Saved asset: "drs_stint_analysis.png" successfully.\n');
 end
