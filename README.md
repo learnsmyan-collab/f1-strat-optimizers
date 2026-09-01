@@ -1,0 +1,38 @@
+# F1 Race Strategy & DRS Simulation
+
+A lightweight MATLAB model simulating Formula 1 race pace over a stint by factoring in non-linear thermal tyre degradation, fuel weight burn-off, and state-dependent DRS traffic dynamics.
+
+---
+
+## What It Does
+
+Most basic strategy models treat every lap independently. This script sets up a more realistic race simulation by tracking:
+* **Tyre Degradation:** Uses a non-linear exponential wear scale so performance drops off harder as the stint goes on.
+* **Fuel Burn:** Accounts for the car getting lighter lap by lap (~1.5kg to 2kg burned per lap), giving a natural pace boost over race distance.
+* **Traffic & DRS Logic:** Replaces simple random coin flips with a Markov-style stickiness loop (`sticky_chance`). If you're stuck in a DRS train, it realistically models multi-lap battle persistence and adjusts top-speed benefits based on tyre age.
+
+---
+
+## The Math Behind It
+
+The net lap time ($t_{lap}$) for any given lap ($i$) across an $N$-lap stint is calculated as:  $$t_{lap} = t_{base} + \left(i^{\beta} \cdot k_{wear}\right) - \((N - i) \cdot k_{fuel}\right) - \Delta t_{drs}$$
+
+Where:
+* $t_{base}$ = Clean air baseline pace ($90.0\text{ s}$)
+* $\beta$ = Tyre wear exponent ($1.2$)
+* $k_{wear}$ = Base tyre wear factor ($0.02$)
+* $k_{fuel}$ = Fuel weight lap-time gain ($0.07\text{ s/lap}$)
+* $\Delta t_{drs}$ = DRS time delta, scaled down slightly if your tyres are too worn to hit peak top speed.
+
+---
+
+## Repo Layout
+
+```text
+f1-strat-optimizers/
+├── data/               # Config files & telemetry logs
+├── outputs/            # Generated stint analysis plots
+├── src/                # Core scripts
+│   └── F1_Strategy_With_DRS.m
+├── requirements.txt    # Environment notes
+└── README.md
