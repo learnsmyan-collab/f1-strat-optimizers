@@ -18,7 +18,6 @@ Most basic strategy models treat every lap independently. This script sets up a 
 The net lap time ($t_{lap}$) for any given lap ($i$) across an $N$-lap stint is calculated as:
 
 $$t_{lap} = t_{base} + (i^{\beta} \cdot k_{wear}) - ((N - i) \cdot k_{fuel}) - \Delta t_{drs}$$
-
 Where:
 * $t_{base}$ = Clean air baseline pace ($90.0\text{ s}$)
 * $\beta$ = Tyre wear exponent ($1.2$)
