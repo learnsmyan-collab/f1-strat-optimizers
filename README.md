@@ -15,7 +15,9 @@ Most basic strategy models treat every lap independently. This script sets up a 
 
 ## The Math Behind It
 
-The net lap time ($t_{lap}$) for any given lap ($i$) across an $N$-lap stint is calculated as:  $$t_{lap} = t_{base} + \left(i^{\beta} \cdot k_{wear}\right) - \((N - i) \cdot k_{fuel}\right) - \Delta t_{drs}$$
+The net lap time ($t_{lap}$) for any given lap ($i$) across an $N$-lap stint is calculated as:
+
+$$t_{lap} = t_{base} + (i^{\beta} \cdot k_{wear}) - ((N - i) \cdot k_{fuel}) - \Delta t_{drs}$$
 
 Where:
 * $t_{base}$ = Clean air baseline pace ($90.0\text{ s}$)
