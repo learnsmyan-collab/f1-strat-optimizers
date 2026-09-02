@@ -40,4 +40,4 @@ f1-strat-optimizers/
 
 ## Stint Visualisation
 
-![F1 Stint Analysis Plot](output/drs_stint_analysis.png)
+![F1 Stint Analysis Plot](outputs/drs_stint_analysis.png)
