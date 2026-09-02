@@ -49,27 +49,10 @@ f1-strat-optimizers/
 
 For any given lap $i$ in a remaining stint of $N$ laps, projected lap time is modeled as:
 
-$$\text{LapTime}_i = \text{base\_pace} + (\text{wear\_rate} \cdot \text{age}_i) + \left(\text{cliff} \cdot \max\left(0, \text{age}_i - \text{cliff\_onset}\right)^{1.7}\right)$$
+`LapTime_i = base_pace + (wear_rate * age_i) + (cliff * max(0, age_i - cliff_onset)^1.7)`
 
 Cumulative stint times for staying out versus pitting now (accounting for pit-stop delta loss) are evaluated via summation:
 
-$$\text{Total}_{\text{stay}} = \sum_{i=1}^{N} \text{LapTime}(\text{tyre\_age} + i)$$
+`Total_stay = sum( LapTime(tyre_age + i) ) for i = 1 to N`
 
-$$\text{Total}_{\text{pit}} = \text{pit\_loss} + \sum_{i=1}^{N} \text{LapTime}(i)$$
-
-### Corresponding MATLAB Implementation
-
-Here is how those exact equations are vectorized and computed inside the script:
-
-```matlab
-% Stint lap vector and aging projections
-stint_laps = (1:rem_laps)';
-old_ages = tyre_age + stint_laps;
-
-% Stay-out cumulative calculation with non-linear tire cliff
-stay_out = base_pace + (wear_rate * old_ages) + (cliff * max(0, old_ages - cliff_onset).^1.7);
-total_stay = sum(stay_out);
-
-% Fresh-set pit projection including pit loss penalty
-pit_proj = base_pace + (wear_rate * stint_laps) + (cliff * max(0, stint_laps - cliff_onset).^1.7);
-total_pit = pit_loss + sum(pit_proj);
+`Total_pit = pit_loss + sum( LapTime(i) ) for i = 1 to N`
