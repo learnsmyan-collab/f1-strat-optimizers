@@ -44,12 +44,6 @@ f1-strat-optimizers/
 
 # F1 Race Strategy & Pit Window Optimization Engine
 
-A MATLAB simulation framework I built to evaluate live race strategy decisions—specifically calculating whether a driver should pit for fresh rubber or stay out on worn tires under varying track conditions (Green flag, VSC, or Safety Car).
-
----
-
----
-
 ---
 
 ## The Math Behind the Stint Projection
