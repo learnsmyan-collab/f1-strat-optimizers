@@ -1,0 +1,86 @@
+function [total_stay, total_pit, delta] = F1_Strategy_Sim(tyre_age, rem_laps, sc_status, compound)
+%==========================================================================
+% Project: F1 Race Strategy & Pit Window Optimization Engine
+% Description: Evaluates pit crossover strategies under dynamic track 
+%              conditions (Green, VSC, SC) and tire compound degradation.
+% Author: Smyan Aggarwal
+% Date: 2026-07-05
+%==========================================================================
+
+    if nargin < 1, tyre_age = 18; end
+    if nargin < 2, rem_laps = 20; end
+    if nargin < 3, sc_status = 'vsc'; end % Options: 'none', 'vsc', 'sc'
+    if nargin < 4, compound = 'medium'; end % Options: 'medium', 'hard'
+
+    % Base operational parameters
+    base_pit = 22.5;
+    base_pace = 90.0;
+    
+    % Compound-specific wear profiles
+    switch lower(compound)
+        case 'soft'
+            wear_rate = 0.12; cliff = 0.05; cliff_onset = 8;
+        case 'medium'
+            wear_rate = 0.08; cliff = 0.03; cliff_onset = 10;
+        case 'hard'
+            wear_rate = 0.05; cliff = 0.015; cliff_onset = 14;
+        otherwise
+            error('Unknown tire compound specified. Use "soft", "medium", or "hard".');
+    end
+
+    % Pit loss adjustment based on track status
+    status_lower = lower(sc_status);
+    switch status_lower
+        case 'vsc'
+            pit_loss = base_pit * 0.55;
+        case 'sc'
+            pit_loss = base_pit * 0.40;
+        case {'none', 'green'}
+            pit_loss = base_pit;
+        otherwise
+            error('Invalid track status. Use "none", "vsc", or "sc".');
+    end
+
+    % Projections over remaining stint laps
+    stint_laps = (1:rem_laps)';
+    old_ages = tyre_age + stint_laps;
+    
+    % Cumulative lap time calculation incorporating non-linear tire cliff
+    stay_out = base_pace + (wear_rate * old_ages) + (cliff * max(0, old_ages - cliff_onset).^1.7);
+    total_stay = sum(stay_out);
+
+    pit_proj = base_pace + (wear_rate * stint_laps) + (cliff * max(0, stint_laps - cliff_onset).^1.7);
+    total_pit = pit_loss + sum(pit_proj);
+
+    delta = total_stay - total_pit;
+
+    % Console telemetry report
+    fprintf('--- F1 STRATEGY ENGINE TELEMETRY ---\n');
+    fprintf('Compound: %s | Track Status: %s | Pit Loss: %.2fs\n', upper(compound), upper(sc_status), pit_loss);
+    fprintf('Stay Out Cumulative: %.2fs | Pit Now Cumulative: %.2fs\n', total_stay, total_pit);
+
+    if total_pit < total_stay
+        fprintf('-> RECOMMENDATION: BOX BOX. Delta advantage: %.2fs\n\n', delta);
+    else
+        fprintf('-> RECOMMENDATION: STAY OUT. Hold track position.\n\n');
+    end
+
+    % High-resolution visualization export
+    fig = figure('Name', 'F1 Strategy Crossover', 'Position', [100, 100, 700, 400]);
+    plot(stint_laps, stay_out, '--r', 'LineWidth', 1.8, 'DisplayName', sprintf('Stay Out (%s Tires)', upper(compound)));
+    hold on;
+    plot(stint_laps, pit_proj, '-b', 'LineWidth', 1.8, 'DisplayName', 'Pit Now (Fresh Set)');
+    grid on; box on;
+    
+    xlabel('Remaining Laps in Stint', 'FontSize', 10);
+    ylabel('Projected Cumulative Lap Time (s)', 'FontSize', 10);
+    title(sprintf('Strategic Crossover Analysis | Track Status: %s', upper(sc_status)), 'FontSize', 11, 'FontWeight', 'bold');
+    legend('Location', 'southeast', 'FontSize', 9);
+
+    % Automated export to outputs directory
+    if ~exist('outputs', 'dir')
+        mkdir('outputs');
+    end
+    exportgraphics(fig, fullfile('outputs', 'f1_strategy.png'), 'Resolution', 300);
+    close(fig);
+end
