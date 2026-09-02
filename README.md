@@ -37,3 +37,7 @@ f1-strat-optimizers/
 │   └── F1_Strategy_With_DRS.m
 ├── requirements.txt    # Environment notes
 └── README.md
+
+## Stint Visualisation
+
+![F1 Stint Analysis Plot](output/drs_stint_analysis.png)
