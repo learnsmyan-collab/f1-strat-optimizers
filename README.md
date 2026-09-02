@@ -56,3 +56,4 @@ Cumulative stint times for staying out versus pitting now (accounting for pit-st
 `Total_stay = sum( LapTime(tyre_age + i) ) for i = 1 to N`
 
 `Total_pit = pit_loss + sum( LapTime(i) ) for i = 1 to N`
+![F1 Stint Analysis Plot](outputs/F1StrategyCrossover.png)
