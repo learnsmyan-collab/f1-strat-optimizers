@@ -1,4 +1,4 @@
-function strategy_optimizer()
+function F1_Strategy_With_DRS
 % ==========================================================================
 % Project: F1 Race Strategy & Stint Optimizer
 % Description: Evaluates lap-time deltas and tire degradation across 
@@ -6,7 +6,7 @@ function strategy_optimizer()
 % Author: Smyan Aggarwal
 % ==========================================================================
 
-    clear; clc; close all;
+     clc; close all;
 
     % =====================================================================
     % CONFIGURATION PARAMETERS (Tweak these to test different scenarios)
@@ -65,8 +65,14 @@ function strategy_optimizer()
     box on;
 
     % Export graphic asset for portfolio README integration
-    exportgraphics(fig, '../outputs/drs_stint_analysis.png', 'Resolution', 300);
-    close(fig);
+    % Export graphic asset for portfolio README integration
+    exportgraphics(fig, 'drs_stint_analysis.png', 'Resolution', 300);
+    
+    % Force the figure to render on screen
+    drawnow;
+    
+    disp('Strategy optimization complete. Asset exported successfully.');
 
-    disp('Strategy optimization complete. Asset exported successfully to outputs/.');
+    % Keeps the graph window open until you click the "X" button
+    uiwait(fig);
 end
