@@ -50,6 +50,8 @@ A MATLAB simulation framework I built to evaluate live race strategy decisionsâ€
 
 ---
 
+---
+
 ## The Math Behind the Stint Projection
 
 For any given lap $i$ in a remaining stint of $N$ laps, projected lap time is modeled as:
