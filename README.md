@@ -43,7 +43,6 @@ f1-strat-optimizers/
 
 
 # F1 Race Strategy & Pit Window Optimization Engine
-
 ---
 
 ## The Math Behind the Stint Projection
