@@ -24,12 +24,15 @@ Where:
 * $k_{wear}$ = Base tyre wear factor ($0.02$)
 * $k_{fuel}$ = Fuel weight lap-time gain ($0.07\text{ s/lap}$)
 * $\Delta t_{drs}$ = DRS time delta, scaled down slightly if your tyres are too worn to hit peak top speed.
+  
+## Stint Visualisation
 
+![F1 Stint Analysis Plot](outputs/drs_stint_analysis.png)
 ---
 
 ## Repo Layout
 
-```text
+
 f1-strat-optimizers/
 ├── data/               # Config files & telemetry logs
 ├── outputs/            # Generated stint analysis plots
@@ -38,6 +41,4 @@ f1-strat-optimizers/
 ├── requirements.txt    # Environment notes
 └── README.md
 
-## Stint Visualisation
 
-![F1 Stint Analysis Plot](output/drs_stint_analysis.png)
