@@ -48,6 +48,8 @@ A MATLAB simulation framework I built to evaluate live race strategy decisions�
 
 ---
 
+---
+
 ## The Math Behind the Stint Projection
 
 For any given lap $i$ in a remaining stint of $N$ laps, projected lap time is modeled as:
@@ -76,11 +78,3 @@ total_stay = sum(stay_out);
 % Fresh-set pit projection including pit loss penalty
 pit_proj = base_pace + (wear_rate * stint_laps) + (cliff * max(0, stint_laps - cliff_onset).^1.7);
 total_pit = pit_loss + sum(pit_proj);
-
-```text
-f1-strat-optimizers/
-│
-├── src/
-│   └── F1_Strategy_Sim.m           # Core parameterized strategy simulation script
-├── outputs/
-└── README.md
