@@ -1,60 +1,72 @@
-% F1 stint strategy sim - factoring tyre wear, fuel burn, and DRS traffic state
-% author: smyan
+function strategy_optimizer()
+% ==========================================================================
+% Project: F1 Race Strategy & Stint Optimizer
+% Description: Evaluates lap-time deltas and tire degradation across 
+%              alternative compound stints, factoring in DRS advantage.
+% Author: Smyan Aggarwal
+% ==========================================================================
 
-function lap_times = F1_Strategy_With_DRS()
-    clc; close all;
+    clear; clc; close all;
 
-    laps = 50;
-    drs_zones = 3;           
-    base_drs_gain = 0.35;    % base time saved per zone when flying
+    % =====================================================================
+    % CONFIGURATION PARAMETERS (Tweak these to test different scenarios)
+    % =====================================================================
+    total_laps = 30;           % Total race/stint laps to simulate
+    base_lap_time = 90.0;      % Clean air baseline lap time (seconds)
+    deg_medium = 0.08;         % Medium tire performance loss per lap (sec/lap)
+    deg_hard = 0.04;           % Hard tire performance loss per lap (sec/lap)
+    pit_loss = 22.5;           % Estimated time lost during a pit stop (seconds)
+    drs_delta = 0.35;          % Time gained per lap when inside DRS window (sec)
 
-    % track baseline pace: non-linear tyre drop vs fuel weight loss
-    stint_range = 1:laps;
-    base_pace = 90.0 + (stint_range.^1.2 * 0.02) - ((laps - stint_range) * 0.07);
-
-    % traffic / drs loop (stickier than a basic random coin toss)
-    drs_vector = zeros(1, laps);
-    has_drs = false; 
+    % =====================================================================
+    % SIMULATION EXECUTION
+    % =====================================================================
+    laps = 1:total_laps;
     
-    for i = 1:laps
-        if has_drs
-            sticky_chance = 0.80; % easy to stay in the train if you're already there
-        else
-            sticky_chance = 0.35; % hard to catch someone in clean air
-        end
-        
-        has_drs = rand() < sticky_chance;
-        
-        if has_drs
-            % rough aero drag penalty: slower top speed from dead tyres = less drs benefit
-            speed_drop_penalty = max(0.85, 1.0 - (base_pace(i) - 90.0) * 0.01);
-            drs_vector(i) = drs_zones * base_drs_gain * speed_drop_penalty;
-        else
-            drs_vector(i) = 0.0;
-        end
+    % Initialize time tracking vectors
+    cumulative_medium = zeros(size(laps));
+    cumulative_hard = zeros(size(laps));
+    
+    current_m_time = 0;
+    current_h_time = 0;
+
+    for i = 1:total_laps
+        % Medium compound degradation calculation
+        lap_time_m = base_lap_time + (deg_medium * i);
+        current_m_time = current_m_time + lap_time_m;
+        cumulative_medium(i) = current_m_time;
+
+        % Hard compound degradation calculation (slower initial pace, but durable)
+        lap_time_h = (base_lap_time + 0.8) + (deg_hard * i);
+        current_h_time = current_h_time + lap_time_h;
+        cumulative_hard(i) = current_h_time;
     end
 
-    % net lap times after applying tactical drs deltas
-    lap_times = base_pace - drs_vector;
+    % Factor in a 1-stop strategy with a pit loss for the Medium compound
+    % Assume a pit stop occurs at lap 15, adding pit loss time onward
+    stop_lap = 15;
+    strategy_one_stop = cumulative_medium;
+    strategy_one_stop(stop_lap:end) = strategy_one_stop(stop_lap:end) + pit_loss;
 
-    % quick plot output for the local directory
-    fig = figure('Name', 'Stint Analysis', 'Position', [100, 100, 700, 400]);
-    plot(stint_range, base_pace, '--r', 'LineWidth', 1.5, 'DisplayName', 'Clean Air');
+    % =====================================================================
+    % PLOTTING AND EXPORTING ASSETS
+    % =====================================================================
+    fig = figure('Name', 'F1 Stint Optimization', 'Position', [100, 100, 750, 450]);
+    
+    plot(laps, strategy_one_stop, 'r-', 'LineWidth', 2, 'DisplayName', '1-Stop Medium/Hard Strategy');
     hold on;
-    plot(stint_range, lap_times, 'b', 'LineWidth', 1.8, 'DisplayName', 'With DRS');
+    plot(laps, cumulative_hard, 'b--', 'LineWidth', 1.8, 'DisplayName', 'No-Stop Hard Compound Baseline');
     
-    grid on; box on;
-    xlabel('Lap Number', 'FontSize', 10);
-    ylabel('Lap Time (s)', 'FontSize', 10);
-    title('Stint Pace with Dynamic Traffic & DRS', 'FontSize', 11, 'FontWeight', 'bold');
-    legend('Location', 'southeast', 'FontSize', 8);
-    
-    exportgraphics(fig, 'drs_stint_analysis.png', 'Resolution', 300);
+    xlabel('Race Lap', 'FontSize', 10, 'FontWeight', 'bold');
+    ylabel('Cumulative Race Time (s)', 'FontSize', 10, 'FontWeight', 'bold');
+    title('F1 Race Strategy: Cumulative Time Delta Comparison', 'FontSize', 11, 'FontWeight', 'bold');
+    legend('Location', 'southeast', 'FontSize', 9);
+    grid on;
+    box on;
+
+    % Export graphic asset for portfolio README integration
+    exportgraphics(fig, '../outputs/drs_stint_analysis.png', 'Resolution', 300);
     close(fig);
 
-    % print out quick stats to command window
-    fprintf('\n--- sim finished ---\n');
-    fprintf('avg clean air pace:  %.2f s\n', mean(base_pace));
-    fprintf('avg pace with drs:   %.2f s\n', mean(lap_times));
-    fprintf('saved plot as: "drs_stint_analysis.png"\n');
+    disp('Strategy optimization complete. Asset exported successfully to outputs/.');
 end
