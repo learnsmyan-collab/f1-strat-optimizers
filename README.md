@@ -42,3 +42,45 @@ f1-strat-optimizers/
 └── README.md
 
 
+# F1 Race Strategy & Pit Window Optimization Engine
+
+A MATLAB simulation framework I built to evaluate live race strategy decisions—specifically calculating whether a driver should pit for fresh rubber or stay out on worn tires under varying track conditions (Green flag, VSC, or Safety Car).
+
+---
+
+## The Math Behind the Stint Projection
+
+For any given lap $i$ in a remaining stint of $N$ laps, projected lap time is modeled as:
+
+$$\text{LapTime}_i = \text{base\_pace} + (\text{wear\_rate} \cdot \text{age}_i) + \left(\text{cliff} \cdot \max\left(0, \text{age}_i - \text{cliff\_onset}\right)^{1.7}\right)$$
+
+Cumulative stint times for staying out versus pitting now (accounting for pit-stop delta loss) are evaluated via summation:
+
+$$\text{Total}_{\text{stay}} = \sum_{i=1}^{N} \text{LapTime}(\text{tyre\_age} + i)$$
+
+$$\text{Total}_{\text{pit}} = \text{pit\_loss} + \sum_{i=1}^{N} \text{LapTime}(i)$$
+
+### Corresponding MATLAB Implementation
+
+Here is how those exact equations are vectorized and computed inside the script:
+
+```matlab
+% Stint lap vector and aging projections
+stint_laps = (1:rem_laps)';
+old_ages = tyre_age + stint_laps;
+
+% Stay-out cumulative calculation with non-linear tire cliff
+stay_out = base_pace + (wear_rate * old_ages) + (cliff * max(0, old_ages - cliff_onset).^1.7);
+total_stay = sum(stay_out);
+
+% Fresh-set pit projection including pit loss penalty
+pit_proj = base_pace + (wear_rate * stint_laps) + (cliff * max(0, stint_laps - cliff_onset).^1.7);
+total_pit = pit_loss + sum(pit_proj);
+
+```text
+f1-strat-optimizers/
+│
+├── src/
+│   └── F1_Strategy_Sim.m           # Core parameterized strategy simulation script
+├── outputs/
+└── README.md
