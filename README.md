@@ -1,7 +1,6 @@
 # F1 Race Strategy & DRS Simulation
 
-A lightweight MATLAB model simulating Formula 1 race pace over a stint by factoring in non-linear thermal tyre degradation, fuel weight burn-off, and state-dependent DRS traffic dynamics.
-
+A professional MATLAB simulation framework modeling Formula 1 race pace over a stint by factoring in non-linear thermal tyre degradation, transient fuel weight burn-off, and state-dependent DRS traffic dynamics.
 ---
 
 ## What It Does
@@ -26,9 +25,21 @@ Where:
 * $\Delta t_{drs}$ = DRS time delta, scaled down slightly if your tyres are too worn to hit peak top speed.
   
 ## Stint Visualisation
+## The Math Behind the Stint Projection
+
+For any given lap $i$ in a remaining stint of $N$ laps, projected lap time is modeled as:
+
+`LapTime_i = base_pace + (wear_rate * age_i) + (cliff * max(0, age_i - cliff_onset)^1.7)`
 
 ![F1 Stint Analysis Plot](outputs/drs_stint_analysis.png)
----
+
+Cumulative stint times for staying out versus pitting now (accounting for pit-stop delta loss) are evaluated via summation:
+
+`Total_stay = sum( LapTime(tyre_age + i) ) for i = 1 to N`
+
+`Total_pit = pit_loss + sum( LapTime(i) ) for i = 1 to N`
+![F1 Stint Analysis Plot](outputs/F1_Strategy_Crossover.png)
+
 
 ## Repo Layout
 
@@ -45,15 +56,5 @@ f1-strat-optimizers/
 # F1 Race Strategy & Pit Window Optimization Engine
 ---
 
-## The Math Behind the Stint Projection
 
-For any given lap $i$ in a remaining stint of $N$ laps, projected lap time is modeled as:
 
-`LapTime_i = base_pace + (wear_rate * age_i) + (cliff * max(0, age_i - cliff_onset)^1.7)`
-
-Cumulative stint times for staying out versus pitting now (accounting for pit-stop delta loss) are evaluated via summation:
-
-`Total_stay = sum( LapTime(tyre_age + i) ) for i = 1 to N`
-
-`Total_pit = pit_loss + sum( LapTime(i) ) for i = 1 to N`
-![F1 Stint Analysis Plot](outputs/F1_Strategy_Crossover.png)
