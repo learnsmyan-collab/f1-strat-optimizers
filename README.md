@@ -25,7 +25,9 @@ Where:
 * $\Delta t_{drs}$ = DRS time delta, scaled down slightly if your tyres are too worn to hit peak top speed.
   
 ## Stint Visualisation
-## The Math Behind the Stint Projection
+
+# F1 Race Strategy & Pit Window Optimization Engine
+---
 
 For any given lap $i$ in a remaining stint of $N$ laps, projected lap time is modeled as:
 
@@ -51,10 +53,5 @@ f1-strat-optimizers/
 │   └── F1_Strategy_With_DRS.m
 ├── requirements.txt    # Environment notes
 └── README.md
-
-
-# F1 Race Strategy & Pit Window Optimization Engine
----
-
 
 
